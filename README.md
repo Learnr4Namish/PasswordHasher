@@ -43,7 +43,7 @@ Clone the repository and install the required dependencies:
 
 ```bash
 git clone https://github.com/Learnr4Namish/PasswordHasher.git
-cd argon2-password-hasher
+cd PasswordHasher
 
 pip install -r requirements.txt
 ```
