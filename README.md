@@ -42,7 +42,7 @@ Designed with production-grade security defaults, dynamic JSON profile configura
 Clone the repository and install the required dependencies:
 
 ```bash
-git clone https://github.com/your-username/argon2-password-hasher.git
+git clone https://github.com/Learnr4Namish/PasswordHasher.git
 cd argon2-password-hasher
 
 pip install -r requirements.txt
