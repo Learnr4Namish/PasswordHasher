@@ -1,0 +1,62 @@
+import json
+import sys
+import os
+from argon2 import PasswordHasher, Type
+from argon2.exceptions import VerifyMismatchError
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+    return os.path.join(base_path, relative_path)
+
+with open('config.json', 'r', encoding='utf-8') as f:
+    config = json.load(f)
+
+profile = None
+try:
+    with open('GLOBAL_CONFIG.config', 'r', encoding='utf-8') as f:
+        requested_profile = f.read().strip()
+        
+        if requested_profile in config['profiles']:
+            profile = requested_profile
+        else:
+            print(f"Warning: Profile '{requested_profile}' not found in config. Falling back to default.")
+            profile = config['default_profile']
+except FileNotFoundError:
+    profile = config['default_profile']
+
+print(f"Active Profile: {profile}")
+
+profile_props = config['profiles'][profile]
+
+type_mapping = {
+    "ID": Type.ID,
+    "I": Type.I,
+    "D": Type.D
+}
+argon_type = type_mapping.get(profile_props.get('type', 'ID'), Type.ID)
+
+ph = PasswordHasher(
+    time_cost=profile_props['time_cost'],
+    memory_cost=profile_props['memory_cost'],
+    parallelism=profile_props['parallelism'],
+    hash_len=profile_props['hash_len'],
+    salt_len=profile_props['salt_len'],
+    type=argon_type
+)
+
+print("\nWelcome to my password hasher program!\n")
+ini_pass = input("Please enter your initial password: ")
+fin_pass = input("Please enter the password to verify: ")
+
+pass_hash = ph.hash(ini_pass)
+
+with open('hashed.password', 'w', encoding='utf-8') as f:
+    f.write(pass_hash)
+
+try:
+    ph.verify(pass_hash, fin_pass)
+    print("\n✅ The password is verified!")
+    print("✅ Password hash saved to hashed.password.")
+    if ph.check_needs_rehash(pass_hash):
+        print("🔄 Note: The hash parameters are outdated. Re-hash this password on login.")
+except VerifyMismatchError:
+    print("\n❌ Verification Failed: The password does not match the hash.")
